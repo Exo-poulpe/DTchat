@@ -1,0 +1,16 @@
+{
+	"authors": [
+		"Exo-poulpe"
+	],
+	"copyright": "Copyright © 2019, Exo-poulpe",
+	"targetPath": "bin",
+    "targetType": "executable",
+    "targetName": "DTchat",
+	"stringImportPaths": ["res"],
+	"dependencies": {
+		"dlangui": "~>0.9.182"
+	},
+	"description": "Local chat in D language",
+	"license": "proprietary",
+	"name": "dtchat"
+}
