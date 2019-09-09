@@ -12,8 +12,7 @@ class FrameSettings : AppFrame
     const Action ACTION_VALIDATE = new Action(ActionCode.Valide,
             "MENU_ACTION_VALIDATE"c, "Validate"c);
 
-
-    EditLine tbx1,tbx2,tbx3,tbx4;
+    EditLine tbx1, tbx2, tbx3, tbx4;
 
     this()
     {
@@ -29,7 +28,7 @@ class FrameSettings : AppFrame
     {
         _appName = "Settings";
         super.initialize();
-        
+
     }
 
     override protected Widget createBody()
@@ -87,8 +86,10 @@ class FrameSettings : AppFrame
             switch (act.id)
             {
             case ActionCode.Valide:
-                SaveDataToFile();
-                window.close();
+                if (SaveDataToFile())
+                {
+                    window.close();
+                }
                 return true;
 
             default:
@@ -100,49 +101,47 @@ class FrameSettings : AppFrame
 
     }
 
-
     void ReadDataFromFile()
     {
-        if(exists("settings.data"))
+        if (exists("settings.data"))
         {
-            File f = File("settings.data","r");
+            File f = File("settings.data", "r");
             string ln = "";
             int i = 0;
-            while((ln = f.readln()) !is null)
+            while ((ln = f.readln()) !is null)
             {
-                switch(i)
+                switch (i)
                 {
-                    case 0: 
+                case 0:
                     tbx1.text(dtext(ln));
                     break;
-                    case 1: 
+                case 1:
                     tbx2.text(dtext(ln));
                     break;
-                    case 2: 
+                case 2:
                     tbx3.text(dtext(ln));
                     break;
-                    case 3: 
+                case 3:
                     tbx4.text(dtext(ln));
                     break;
-                    default:
+                default:
                     window.close();
                     break;
                 }
-                i+=1;
+                i += 1;
 
             }
         }
     }
 
-    void SaveDataToFile()
+    bool SaveDataToFile()
     {
-        if(!exists("settings.data"))
-        {
-            File f = File("settings.data","w");
-            f.write(tbx1.text ~ "\n");
-            f.write(tbx2.text ~ "\n");
-            f.write(tbx3.text ~ "\n");
-            f.write(tbx4.text);
-        }
+        File f = File("settings.data", "w");
+        f.write(tbx1.text ~ "\n");
+        f.write(tbx2.text ~ "\n");
+        f.write(tbx3.text ~ "\n");
+        f.write(tbx4.text);
+
+        return true;
     }
 }

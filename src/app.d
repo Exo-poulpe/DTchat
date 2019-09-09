@@ -13,6 +13,7 @@ class FrameChat : AppFrame
 	EditBox rtb;
 	EditLine tbx;
 	Socket soc;
+	Button btn1;
 	this()
 	{
 	}
@@ -36,12 +37,16 @@ class FrameChat : AppFrame
 
 	const Action ACTION_CONNECT = new Action(ActionCode.Connect,
 			"MENU_ICON_CONNECT"c, "offline_red16"c, KeyCode.KEY_X, KeyFlag.Control);
+	const Action ACTION_DISCONNECT = new Action(ActionCode.Disconnect,
+			"MENU_ICON_DISCONNECT"c, "online_green16"c, KeyCode.KEY_X, KeyFlag.Control);
 	const Action ACTION_SETTINGS = new Action(ActionCode.Settings,
 			"MENU_ICON_SETTINGS"c, "settings16"c, KeyCode.KEY_X, KeyFlag.Control);
 	const Action ACTIONS_HELP = new Action(ActionCode.Help, "MENU_ICON_HELP"c,
 			"help16"c, KeyCode.KEY_X, KeyFlag.Control);
 	const Action ACTIONS_SEND = new Action(ActionCode.Send, "MENU_ICON_SEND"c,
 			"send16"c, KeyCode.KEY_X, KeyFlag.Control);
+			
+
 
 	override protected void initialize()
 	{
@@ -99,7 +104,8 @@ class FrameChat : AppFrame
 			switch (act.id)
 			{
 			case ActionCode.Send:
-				rtb.text(rtb.text ~ "\n" ~ tbx.text());
+			string[] tmp = ReadDataFromFile();
+				rtb.text(rtb.text ~  dtext(chomp(tmp[DataFromFile.Name])) ~ " : "  ~ tbx.text() ~ "\n");
 				tbx.text("");
 				tbx.setFocus();
 				return true;
@@ -148,6 +154,7 @@ class FrameChat : AppFrame
 		{
 			InternetAddress addr = new InternetAddress(tmp[DataFromFile.Ip], to!ushort(tmp[DataFromFile.RPort]));
 			// InternetAddress addr1 = new InternetAddress("127.0.0.1", to!ushort(tmp[4]));
+			
 			soc.blocking = false;
 			soc.bind(new InternetAddress( to!ushort(tmp[DataFromFile.LPort])));
 			soc.listen(1);
@@ -175,7 +182,7 @@ class FrameChat : AppFrame
 	string[] ReadDataFromFile()
 	{
 		string[] result;
-		;
+		
 		if (exists("settings.data"))
 		{
 			File f = File("settings.data", "r");
