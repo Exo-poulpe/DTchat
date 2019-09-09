@@ -12,6 +12,7 @@ class FrameChat : AppFrame
 {
 	EditBox rtb;
 	EditLine tbx;
+	Socket soc;
 	this()
 	{
 	}
@@ -24,6 +25,13 @@ class FrameChat : AppFrame
 		Disconnect,
 		Help,
 		Send,
+	}
+
+	enum DataFromFile : int{
+		Ip = 0,
+		RPort,
+		Name,
+		LPort,
 	}
 
 	const Action ACTION_CONNECT = new Action(ActionCode.Connect,
@@ -44,24 +52,32 @@ class FrameChat : AppFrame
 	override protected Widget createBody()
 	{
 		TableLayout res = new TableLayout();
+		// TabWidget tabs = new TabWidget("TABS");
 		HorizontalLayout Line1 = new HorizontalLayout();
 		int x = 645;
 		int y = 400;
-		rtb = new EditBox("rtb1",null,ScrollBarMode.Invisible,ScrollBarMode.Invisible);
+		rtb = new EditBox("rtb1", null, ScrollBarMode.Invisible, ScrollBarMode.Invisible);
 		rtb.readOnly(true);
 		rtb.minHeight(y);
-		rtb.minWidth(x);
+		// rtb.minWidth(x);
+		rtb.layoutWidth = x;
 		Line1.addChild(rtb);
 		HorizontalLayout Line2 = new HorizontalLayout();
-		tbx = new EditLine("tbx",null);
-		tbx.minWidth(x-30);
+		tbx = new EditLine("tbx", null);
+		tbx.minWidth(x - 30);
 		ImageButton btnSend = new ImageButton(ACTIONS_SEND);
 		Line2.addChild(tbx);
 		Line2.addChild(btnSend);
 
+		// tabs.addChild(rtb);
+		// tabs.addChild(new VSpacer());
+		// tabs.addChild(Line2);
 
 		res.addChild(Line1);
+		res.addChild(new HSpacer());
 		res.addChild(Line2);
+		soc = new TcpSocket();
+
 		return res;
 	}
 
@@ -82,9 +98,10 @@ class FrameChat : AppFrame
 		{
 			switch (act.id)
 			{
-				case ActionCode.Send:
+			case ActionCode.Send:
 				rtb.text(rtb.text ~ "\n" ~ tbx.text());
 				tbx.text("");
+				tbx.setFocus();
 				return true;
 			case ActionCode.Connect:
 				if (!exists("settings.data"))
@@ -125,21 +142,22 @@ class FrameChat : AppFrame
 
 	void ConnectToChat()
 	{
-		Socket soc = new TcpSocket();
 		// Socket soc1 = new TcpSocket();
 		string[] tmp = ReadDataFromFile();
 		try
 		{
-			InternetAddress addr = new InternetAddress(tmp[0], to!ushort(tmp[1]));
+			InternetAddress addr = new InternetAddress(tmp[DataFromFile.Ip], to!ushort(tmp[DataFromFile.RPort]));
 			// InternetAddress addr1 = new InternetAddress("127.0.0.1", to!ushort(tmp[4]));
-			soc.bind(new InternetAddress(1234));
+			soc.blocking = false;
+			soc.bind(new InternetAddress( to!ushort(tmp[DataFromFile.LPort])));
 			soc.listen(1);
-			while(true)
+
+			while (true)
 			{
 				Socket client = soc.accept();
 				char[1024] buf;
 				auto recv = client.receive(buf);
-				window.showMessageBox("Message"d,UIString.fromRaw(dtext(buf)));
+				window.showMessageBox("Message"d, dtext(buf));
 			}
 			// soc[0].connect(addr);
 
@@ -181,8 +199,7 @@ extern (C) int UIAppMain(string[] args)
 
 	embeddedResourceList.addResources(embedResourcesFromList!("resources.list")());
 
-	Window window = Platform.instance.createWindow("DTchat", null,
-			WindowFlag.Resizable, 500, 400);
+	Window window = Platform.instance.createWindow("DTchat", null, WindowFlag.Resizable, 500, 400);
 
 	static if (BACKEND_GUI)
 		window.windowIcon = drawableCache.getImage("icon32");
