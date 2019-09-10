@@ -28,7 +28,8 @@ class FrameChat : AppFrame
 		Send,
 	}
 
-	enum DataFromFile : int{
+	enum DataFromFile : int
+	{
 		Ip = 0,
 		RPort,
 		Name,
@@ -36,18 +37,17 @@ class FrameChat : AppFrame
 	}
 
 	const Action ACTION_CONNECT = new Action(ActionCode.Connect,
-			"MENU_ICON_CONNECT"c, "offline_red16"c, KeyCode.KEY_X, KeyFlag.Control);
+			"MENU_ICON_CONNECT"c, "offline_red16"c);
 	const Action ACTION_DISCONNECT = new Action(ActionCode.Disconnect,
-			"MENU_ICON_DISCONNECT"c, "online_green16"c, KeyCode.KEY_X, KeyFlag.Control);
+			"MENU_ICON_DISCONNECT"c, "online_green16"c);
 	const Action ACTION_SETTINGS = new Action(ActionCode.Settings,
-			"MENU_ICON_SETTINGS"c, "settings16"c, KeyCode.KEY_X, KeyFlag.Control);
-	const Action ACTIONS_HELP = new Action(ActionCode.Help, "MENU_ICON_HELP"c,
-			"help16"c, KeyCode.KEY_X, KeyFlag.Control);
-	const Action ACTIONS_SEND = new Action(ActionCode.Send, "MENU_ICON_SEND"c,
-			"send16"c, KeyCode.KEY_X, KeyFlag.Control);
-			
+			"MENU_ICON_SETTINGS"c, "settings16"c);
+	const Action ACTIONS_HELP = new Action(ActionCode.Help, "MENU_ICON_HELP"c, "help16"c);
+	const Action ACTIONS_SEND = new Action(ActionCode.Send, "MENU_ICON_SEND"c, "send16"c);
+	const ACTION_DISABLED = ActionState(false, true, false);
 
 
+	
 	override protected void initialize()
 	{
 		_appName = "DTchat";
@@ -56,15 +56,13 @@ class FrameChat : AppFrame
 
 	override protected Widget createBody()
 	{
-		TableLayout res = new TableLayout();
-		// TabWidget tabs = new TabWidget("TABS");
+		TableLayout res = new TableLayout(); // TabWidget tabs = new TabWidget("TABS");
 		HorizontalLayout Line1 = new HorizontalLayout();
 		int x = 645;
 		int y = 400;
 		rtb = new EditBox("rtb1", null, ScrollBarMode.Invisible, ScrollBarMode.Invisible);
 		rtb.readOnly(true);
-		rtb.minHeight(y);
-		// rtb.minWidth(x);
+		rtb.minHeight(y); // rtb.minWidth(x);
 		rtb.layoutWidth = x;
 		Line1.addChild(rtb);
 		HorizontalLayout Line2 = new HorizontalLayout();
@@ -82,7 +80,6 @@ class FrameChat : AppFrame
 		res.addChild(new HSpacer());
 		res.addChild(Line2);
 		soc = new TcpSocket();
-
 		return res;
 	}
 
@@ -104,8 +101,8 @@ class FrameChat : AppFrame
 			switch (act.id)
 			{
 			case ActionCode.Send:
-			string[] tmp = ReadDataFromFile();
-				rtb.text(rtb.text ~  dtext(chomp(tmp[DataFromFile.Name])) ~ " : "  ~ tbx.text() ~ "\n");
+				string[] tmp = ReadDataFromFile();
+				rtb.text(rtb.text ~ dtext(chomp(tmp[DataFromFile.Name])) ~ " : " ~ tbx.text() ~ "\n");
 				tbx.text("");
 				tbx.setFocus();
 				return true;
@@ -118,13 +115,13 @@ class FrameChat : AppFrame
 				}
 				else
 				{
+					act.state = ACTION_DISABLED;
 					ConnectToChat();
 					return true;
 				}
 			case ActionCode.Settings:
 				Window tmp = Platform.instance.createWindow("Settings",
 						null, !WindowFlag.Resizable, 300, 300);
-
 				static if (BACKEND_GUI)
 					tmp.windowIcon = drawableCache.getImage("settings32");
 
@@ -136,14 +133,12 @@ class FrameChat : AppFrame
 				window.showMessageBox(UIString.fromRaw("Help"d),
 						UIString.fromRaw("Voici l'aide"d));
 				return true;
-
 			default:
 				return super.handleAction(act);
 			}
 		}
 
 		return false;
-
 	}
 
 	void ConnectToChat()
@@ -152,11 +147,11 @@ class FrameChat : AppFrame
 		string[] tmp = ReadDataFromFile();
 		try
 		{
-			InternetAddress addr = new InternetAddress(tmp[DataFromFile.Ip], to!ushort(tmp[DataFromFile.RPort]));
-			// InternetAddress addr1 = new InternetAddress("127.0.0.1", to!ushort(tmp[4]));
-			
+			InternetAddress addr = new InternetAddress(tmp[DataFromFile.Ip],
+					to!ushort(tmp[DataFromFile.RPort])); // InternetAddress addr1 = new InternetAddress("127.0.0.1", to!ushort(tmp[4]));
+
 			soc.blocking = false;
-			soc.bind(new InternetAddress( to!ushort(tmp[DataFromFile.LPort])));
+			soc.bind(new InternetAddress(to!ushort(tmp[DataFromFile.LPort])));
 			soc.listen(1);
 
 			while (true)
@@ -182,7 +177,6 @@ class FrameChat : AppFrame
 	string[] ReadDataFromFile()
 	{
 		string[] result;
-		
 		if (exists("settings.data"))
 		{
 			File f = File("settings.data", "r");
@@ -195,7 +189,6 @@ class FrameChat : AppFrame
 			}
 		}
 		return result;
-
 	}
 
 }
@@ -203,7 +196,6 @@ class FrameChat : AppFrame
 extern (C) int UIAppMain(string[] args)
 {
 	Log.setLogLevel(LogLevel.Fatal);
-
 	embeddedResourceList.addResources(embedResourcesFromList!("resources.list")());
 
 	Window window = Platform.instance.createWindow("DTchat", null, WindowFlag.Resizable, 500, 400);
