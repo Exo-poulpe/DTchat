@@ -5,6 +5,7 @@ import std.conv;
 import std.string;
 import dlangui;
 import Settings;
+import vibe.d;
 
 mixin APP_ENTRY_POINT;
 
@@ -46,8 +47,6 @@ class FrameChat : AppFrame
 	const Action ACTIONS_SEND = new Action(ActionCode.Send, "MENU_ICON_SEND"c, "send16"c);
 	const ACTION_DISABLED = ActionState(false, true, false);
 
-
-	
 	override protected void initialize()
 	{
 		_appName = "DTchat";
@@ -58,6 +57,8 @@ class FrameChat : AppFrame
 	{
 		TableLayout res = new TableLayout(); // TabWidget tabs = new TabWidget("TABS");
 		HorizontalLayout Line1 = new HorizontalLayout();
+		Line1.layoutWidth = FILL_PARENT;
+		Line1.layoutHeight = FILL_PARENT;
 		int x = 645;
 		int y = 400;
 		rtb = new EditBox("rtb1", null, ScrollBarMode.Invisible, ScrollBarMode.Invisible);
@@ -66,6 +67,7 @@ class FrameChat : AppFrame
 		rtb.layoutWidth = x;
 		Line1.addChild(rtb);
 		HorizontalLayout Line2 = new HorizontalLayout();
+		Line2.layoutWidth = FILL_PARENT;
 		tbx = new EditLine("tbx", null);
 		tbx.minWidth(x - 30);
 		ImageButton btnSend = new ImageButton(ACTIONS_SEND);
@@ -145,33 +147,78 @@ class FrameChat : AppFrame
 	{
 		// Socket soc1 = new TcpSocket();
 		string[] tmp = ReadDataFromFile();
+
 		try
 		{
-			InternetAddress addr = new InternetAddress(tmp[DataFromFile.Ip],
-					to!ushort(tmp[DataFromFile.RPort])); // InternetAddress addr1 = new InternetAddress("127.0.0.1", to!ushort(tmp[4]));
-
-			soc.blocking = false;
-			soc.bind(new InternetAddress(to!ushort(tmp[DataFromFile.LPort])));
-			soc.listen(1);
-
-			while (true)
+			listenTCP(to!ushort(chomp(tmp[DataFromFile.LPort])),
+					conn => EnabledListener(conn), "0.0.0.0", TCPListenOptions.defaults);
+			TCPConnection co = connectTCP(tmp[DataFromFile.Ip], to!ushort(tmp[DataFromFile.RPort]));
+			if (co.connected())
 			{
-				Socket client = soc.accept();
-				char[1024] buf;
-				auto recv = client.receive(buf);
-				window.showMessageBox("Message"d, dtext(buf));
+				co.write(cast(ubyte[]) "Test");
 			}
-			// soc[0].connect(addr);
-
 		}
-		catch (SocketException ex)
+		catch (SocketException sex)
 		{
-			window.showMessageBox(UIString.fromRaw("Error"), UIString.fromRaw(ex.msg));
+			window.showMessageBox("Socket error"d, dtext(sex.msg));
 		}
 		catch (Exception ex)
 		{
-			window.showMessageBox(UIString.fromRaw("Error"), UIString.fromRaw(ex.msg));
+			window.showMessageBox("Error"d, dtext(ex.msg));
 		}
+		// try
+		// {
+		// 	// InternetAddress addr = new InternetAddress(tmp[DataFromFile.Ip],
+		// 	// 		to!ushort(tmp[DataFromFile.RPort])); // InternetAddress addr1 = new InternetAddress("127.0.0.1", to!ushort(tmp[4]));
+
+		// 	// soc.blocking = false;
+		// 	// soc.bind(new InternetAddress(to!ushort(tmp[DataFromFile.LPort])));
+		// 	// soc.listen(1);
+
+		// 	while (true)
+		// 	{
+		// 		Socket client = soc.accept();
+		// 		char[1024] buf;
+		// 		auto recv = client.receive(buf);
+		// 		window.showMessageBox("Message"d, dtext(buf));
+		// 	}
+		// 	// soc[0].connect(addr);
+
+		// }
+		// catch (SocketException ex)
+		// {
+		// 	window.showMessageBox(UIString.fromRaw("Error"), UIString.fromRaw(ex.msg));
+		// }
+		// catch (Exception ex)
+		// {
+		// 	window.showMessageBox(UIString.fromRaw("Error"), UIString.fromRaw(ex.msg));
+		// }
+	}
+
+	void EnabledListener(TCPConnection soc)
+	{
+		while (true)
+		{
+			if (soc.connected())
+			{
+				char[] text = "Test".dup;
+				ubyte[] utext;
+				for (int i = 0; i < text.length; i += 1)
+				{
+					utext ~= to!ubyte(text[i]);
+				}
+				soc.write(utext);
+			}
+			ubyte[] tmp;
+			soc.read(tmp);
+			window.showMessageBox("Network"d, dtext(tmp));
+
+		}
+	}
+
+	void EnabledConnection(TCPConnection soc)
+	{
+		soc.write(cast(ubyte[]) "ceci est un test");
 	}
 
 	string[] ReadDataFromFile()
@@ -195,7 +242,7 @@ class FrameChat : AppFrame
 
 extern (C) int UIAppMain(string[] args)
 {
-	Log.setLogLevel(LogLevel.Fatal);
+	//dlangui.core.logger.LogLevel.Log.setLogLevel(LogLevel.Fatal);
 	embeddedResourceList.addResources(embedResourcesFromList!("resources.list")());
 
 	Window window = Platform.instance.createWindow("DTchat", null, WindowFlag.Resizable, 500, 400);
