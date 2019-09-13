@@ -3,9 +3,10 @@ import std.socket;
 import std.file;
 import std.conv;
 import std.string;
+import core.thread;
 import dlangui;
 import Settings;
-import vibe.d;
+import vibe.core.net;
 
 mixin APP_ENTRY_POINT;
 
@@ -150,13 +151,21 @@ class FrameChat : AppFrame
 
 		try
 		{
-			listenTCP(to!ushort(chomp(tmp[DataFromFile.LPort])),
-					conn => EnabledListener(conn), "0.0.0.0", TCPListenOptions.defaults);
-			TCPConnection co = connectTCP(tmp[DataFromFile.Ip], to!ushort(tmp[DataFromFile.RPort]));
-			if (co.connected())
-			{
-				co.write(cast(ubyte[]) "Test");
-			}
+			// char[] text = "Test".dup;
+			// ubyte[] utext;
+			// for (int i = 0; i < text.length; i += 1)
+			// {
+			// 	utext ~= to!ubyte(text[i]);
+			// }
+			// listenTCP(to!ushort(chomp(tmp[DataFromFile.LPort])),
+			// 		(conn) => EnabledListener(conn), "0.0.0.0", TCPListenOptions.defaults);
+			// TCPClient _client = new TCPClient();
+			// AsyncSocket soc = window.createAsyncSocket(_client);
+			// TCPConnection co = connectTCP(tmp[DataFromFile.Ip], to!ushort(tmp[DataFromFile.RPort]));
+			// if (co.connected())
+			// {
+			// 	co.write(cast(ubyte[]) "Test");
+			// }
 		}
 		catch (SocketException sex)
 		{
@@ -197,6 +206,7 @@ class FrameChat : AppFrame
 
 	void EnabledListener(TCPConnection soc)
 	{
+		window.showMessageBox("Socket"d, "Listen"d);
 		while (true)
 		{
 			if (soc.connected())

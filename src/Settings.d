@@ -2,6 +2,7 @@ module Settings;
 import dlangui.core.settings;
 import std.socket;
 import std.conv;
+import std.string;
 import std.stdio;
 import std.file;
 import dlangui;
@@ -110,19 +111,20 @@ class FrameSettings : AppFrame
             int i = 0;
             while ((ln = f.readln()) !is null)
             {
+                ln = chomp(ln);
                 switch (i)
                 {
                 case 0:
-                    tbx1.text(dtext(ln));
+                    tbx1.text(strip(dtext(ln)," "));
                     break;
                 case 1:
-                    tbx2.text(dtext(ln));
+                    tbx2.text(strip(dtext(ln)," "));
                     break;
                 case 2:
-                    tbx3.text(dtext(ln));
+                    tbx3.text(strip(dtext(ln)," "));
                     break;
                 case 3:
-                    tbx4.text(dtext(ln));
+                    tbx4.text(strip(dtext(ln)," "));
                     break;
                 default:
                     window.close();
@@ -137,10 +139,10 @@ class FrameSettings : AppFrame
     bool SaveDataToFile()
     {
         File f = File("settings.data", "w");
-        f.write(tbx1.text ~ "\n");
-        f.write(tbx2.text ~ "\n");
-        f.write(tbx3.text ~ "\n");
-        f.write(tbx4.text);
+        f.write(strip(tbx1.text, " ") ~ "\n");
+        f.write(strip(tbx2.text," " ) ~ "\n");
+        f.write(strip(tbx3.text," ") ~ "\n");
+        f.write(strip(tbx4.text," "));
 
         return true;
     }
