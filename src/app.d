@@ -6,7 +6,6 @@ import std.string;
 import core.thread;
 import dlangui;
 import Settings;
-import vibe.core.net;
 
 mixin APP_ENTRY_POINT;
 
@@ -16,6 +15,7 @@ class FrameChat : AppFrame
 	EditLine tbx;
 	Socket soc;
 	Button btn1;
+	ToolBar tb;
 	this()
 	{
 	}
@@ -90,7 +90,7 @@ class FrameChat : AppFrame
 	{
 
 		ToolBarHost bar = new ToolBarHost();
-		ToolBar tb;
+		
 		tb = bar.getOrAddToolbar("Standard");
 		tb.addButtons(ACTION_CONNECT, ACTION_SETTINGS, ACTIONS_HELP);
 
@@ -118,8 +118,10 @@ class FrameChat : AppFrame
 				}
 				else
 				{
-					act.state = ACTION_DISABLED;
-					ConnectToChat();
+					// act.state = ACTION_DISABLED;
+					ToolBarImageButton tmp = cast(ToolBarImageButton)tb.childById("MENU_ICON_CONNECT"c);
+					tmp.drawableId("online_green16"c);
+					// ConnectToChat();
 					return true;
 				}
 			case ActionCode.Settings:
@@ -204,32 +206,32 @@ class FrameChat : AppFrame
 		// }
 	}
 
-	void EnabledListener(TCPConnection soc)
-	{
-		window.showMessageBox("Socket"d, "Listen"d);
-		while (true)
-		{
-			if (soc.connected())
-			{
-				char[] text = "Test".dup;
-				ubyte[] utext;
-				for (int i = 0; i < text.length; i += 1)
-				{
-					utext ~= to!ubyte(text[i]);
-				}
-				soc.write(utext);
-			}
-			ubyte[] tmp;
-			soc.read(tmp);
-			window.showMessageBox("Network"d, dtext(tmp));
+	// void EnabledListener(TcpSocket soc)
+	// {
+	// 	window.showMessageBox("Socket"d, "Listen"d);
+	// 	while (true)
+	// 	{
+	// 		if (soc.connected())
+	// 		{
+	// 			char[] text = "Test".dup;
+	// 			ubyte[] utext;
+	// 			for (int i = 0; i < text.length; i += 1)
+	// 			{
+	// 				utext ~= to!ubyte(text[i]);
+	// 			}
+	// 			soc.write(utext);
+	// 		}
+	// 		ubyte[] tmp;
+	// 		soc.read(tmp);
+	// 		window.showMessageBox("Network"d, dtext(tmp));
 
-		}
-	}
+	// 	}
+	// }
 
-	void EnabledConnection(TCPConnection soc)
-	{
-		soc.write(cast(ubyte[]) "ceci est un test");
-	}
+	// void EnabledConnection(TcpSocket soc)
+	// {
+	// 	soc.write(cast(ubyte[]) "ceci est un test");
+	// }
 
 	string[] ReadDataFromFile()
 	{
