@@ -6,6 +6,7 @@ import std.string;
 import core.thread;
 import dlangui;
 import Settings;
+import core.thread;
 import vibe.core.net;
 
 mixin APP_ENTRY_POINT;
@@ -16,6 +17,7 @@ class FrameChat : AppFrame
 	EditLine tbx;
 	Socket soc;
 	Button btn1;
+	bool Connected = false;
 	this()
 	{
 	}
@@ -92,7 +94,10 @@ class FrameChat : AppFrame
 		ToolBarHost bar = new ToolBarHost();
 		ToolBar tb;
 		tb = bar.getOrAddToolbar("Standard");
-		tb.addButtons(ACTION_CONNECT, ACTION_SETTINGS, ACTIONS_HELP);
+		ToolBarImageButton connector = new ToolBarImageButton(ACTION_CONNECT);
+		connector.click = (Widget wid) => ChangeIcon(wid);
+		tb.addChild(connector);
+		tb.addButtons(ACTION_SETTINGS, ACTIONS_HELP);
 
 		return bar;
 	}
@@ -105,7 +110,7 @@ class FrameChat : AppFrame
 			{
 			case ActionCode.Send:
 				string[] tmp = ReadDataFromFile();
-				rtb.text(rtb.text ~ dtext(chomp(tmp[DataFromFile.Name])) ~ " : " ~ tbx.text() ~ "\n");
+				AddLine(to!string(tbx.text()), tmp[DataFromFile.Name]);
 				tbx.text("");
 				tbx.setFocus();
 				return true;
@@ -118,8 +123,8 @@ class FrameChat : AppFrame
 				}
 				else
 				{
-					act.state = ACTION_DISABLED;
-					ConnectToChat();
+
+					
 					return true;
 				}
 			case ActionCode.Settings:
@@ -151,21 +156,8 @@ class FrameChat : AppFrame
 
 		try
 		{
-			// char[] text = "Test".dup;
-			// ubyte[] utext;
-			// for (int i = 0; i < text.length; i += 1)
-			// {
-			// 	utext ~= to!ubyte(text[i]);
-			// }
-			// listenTCP(to!ushort(chomp(tmp[DataFromFile.LPort])),
-			// 		(conn) => EnabledListener(conn), "0.0.0.0", TCPListenOptions.defaults);
-			// TCPClient _client = new TCPClient();
-			// AsyncSocket soc = window.createAsyncSocket(_client);
-			// TCPConnection co = connectTCP(tmp[DataFromFile.Ip], to!ushort(tmp[DataFromFile.RPort]));
-			// if (co.connected())
-			// {
-			// 	co.write(cast(ubyte[]) "Test");
-			// }
+			Thread tListener = new Thread(&EnabledListener);
+			tListener.start();
 		}
 		catch (SocketException sex)
 		{
@@ -204,25 +196,51 @@ class FrameChat : AppFrame
 		// }
 	}
 
-	void EnabledListener(TCPConnection soc)
+	bool ChangeIcon(Widget wid)
 	{
-		window.showMessageBox("Socket"d, "Listen"d);
+		if (!Connected)
+		{
+			ToolBarImageButton tmp = cast(ToolBarImageButton) wid;
+			tmp.drawableId("online_green16");
+			Connected = true;
+			ConnectToChat();
+		}
+		else
+		{
+			ToolBarImageButton tmp = cast(ToolBarImageButton) wid;
+			tmp.drawableId("offline_red16");
+			Connected = false;
+		}
+		return true;
+
+	}
+
+	void EnabledListener()
+	{
+		string[] tmp = ReadDataFromFile();
+		Socket server = new TcpSocket();
+		server.blocking(true);
+		server.setOption(SocketOptionLevel.SOCKET, SocketOption.REUSEADDR, true);
+		server.bind(new InternetAddress(to!ushort(tmp[DataFromFile.LPort])));
+		server.listen(1);
+
 		while (true)
 		{
-			if (soc.connected())
-			{
-				char[] text = "Test".dup;
-				ubyte[] utext;
-				for (int i = 0; i < text.length; i += 1)
-				{
-					utext ~= to!ubyte(text[i]);
-				}
-				soc.write(utext);
-			}
-			ubyte[] tmp;
-			soc.read(tmp);
-			window.showMessageBox("Network"d, dtext(tmp));
+			Socket client = server.accept();
 
+			while (client.isAlive())
+			{
+				char[] buffer;
+				auto received = client.receive(buffer);
+				// enum header = "HTTP/1.0 200 OK\nContent-Type: text/html; charset=utf-8\n\n";
+
+				// string response = header ~"\n";
+				// AddLine(to!string(buffer), "User");
+				client.send("salut");
+			}
+
+			client.shutdown(SocketShutdown.BOTH);
+			client.close();
 		}
 	}
 
@@ -248,12 +266,20 @@ class FrameChat : AppFrame
 		return result;
 	}
 
+	void AddLine(string value, string username)
+	{
+		rtb.text(dtext(rtb.text) ~ dtext(chomp(username)) ~ " : " ~ dtext(value) ~ "\n");
+	}
+
 }
 
 extern (C) int UIAppMain(string[] args)
 {
 	//dlangui.core.logger.LogLevel.Log.setLogLevel(LogLevel.Fatal);
 	embeddedResourceList.addResources(embedResourcesFromList!("resources.list")());
+
+	Platform.instance.uiLanguage = "en";
+	Platform.instance.uiTheme = "theme_default";
 
 	Window window = Platform.instance.createWindow("DTchat", null, WindowFlag.Resizable, 500, 400);
 
