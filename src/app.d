@@ -6,8 +6,11 @@ import std.string;
 import core.thread;
 import dlangui;
 import Settings;
+<<<<<<< HEAD
 import core.thread;
 import vibe.core.net;
+=======
+>>>>>>> 37f08e771240d42f83656c13fb1b59e399ccf56b
 
 mixin APP_ENTRY_POINT;
 
@@ -17,7 +20,11 @@ class FrameChat : AppFrame
 	EditLine tbx;
 	Socket soc;
 	Button btn1;
+<<<<<<< HEAD
 	bool Connected = false;
+=======
+	ToolBar tb;
+>>>>>>> 37f08e771240d42f83656c13fb1b59e399ccf56b
 	this()
 	{
 	}
@@ -92,7 +99,7 @@ class FrameChat : AppFrame
 	{
 
 		ToolBarHost bar = new ToolBarHost();
-		ToolBar tb;
+		
 		tb = bar.getOrAddToolbar("Standard");
 		ToolBarImageButton connector = new ToolBarImageButton(ACTION_CONNECT);
 		connector.click = (Widget wid) => ChangeIcon(wid);
@@ -123,8 +130,15 @@ class FrameChat : AppFrame
 				}
 				else
 				{
+<<<<<<< HEAD
 
 					
+=======
+					// act.state = ACTION_DISABLED;
+					ToolBarImageButton tmp = cast(ToolBarImageButton)tb.childById("MENU_ICON_CONNECT"c);
+					tmp.drawableId("online_green16"c);
+					// ConnectToChat();
+>>>>>>> 37f08e771240d42f83656c13fb1b59e399ccf56b
 					return true;
 				}
 			case ActionCode.Settings:
@@ -244,10 +258,10 @@ class FrameChat : AppFrame
 		}
 	}
 
-	void EnabledConnection(TCPConnection soc)
-	{
-		soc.write(cast(ubyte[]) "ceci est un test");
-	}
+	// void EnabledConnection(TcpSocket soc)
+	// {
+	// 	soc.write(cast(ubyte[]) "ceci est un test");
+	// }
 
 	string[] ReadDataFromFile()
 	{

@@ -4,8 +4,7 @@
 	],
 	"copyright": "Copyright © 2019, Exo-poulpe",
 	"dependencies": {
-		"dlangui": "~>0.9.182",
-		"vibe-d": "~>0.8.5"
+		"dlangui": "~>0.9.182"
 	},
 	"description": "Local chat in D language",
 	"license": "proprietary",
